@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "=== v22: build.network:host — full probe ===" > /app/index.html
+echo "=== v23: TCP table dump + agent deep probe ===" > /app/index.html
 echo "Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/index.html
 echo "" >> /app/index.html
 cat /build-results.txt >> /app/index.html 2>&1

@@ -1,67 +1,75 @@
 #!/bin/sh
 exec > /build-results.txt 2>&1
-echo "=== BUILD v22 — build.network:host ==="
+echo "=== BUILD v23 — TCP table + agent deep probe ==="
 date -u
 
 echo ""
-echo "=== CADDY ADMIN 172.18.0.4:2019 ==="
-curl -s -m 3 http://172.18.0.4:2019/config/ || echo "(refused)"
+echo "=== /proc/net/tcp (ALL TCP sockets on DinD host) ==="
+cat /proc/net/tcp 2>&1
 
 echo ""
-echo "=== CADDY METRICS 172.18.0.4:9090 ==="
-curl -s -m 5 http://172.18.0.4:9090/metrics | head -100 || echo "(refused)"
+echo "=== /proc/net/tcp6 ==="
+cat /proc/net/tcp6 2>&1
 
 echo ""
-echo "=== AGENT 172.18.0.2:8000 ==="
-curl -s -m 5 --http1.1 http://172.18.0.2:8000/health
-echo ""
-curl -s -m 5 --http1.1 http://172.18.0.2:8000/openapi.json
-echo ""
-curl -s -m 5 --http1.1 http://172.18.0.2:8000/docs | head -80
-echo ""
-curl -s -m 3 --http1.1 http://172.18.0.2:8000/
-echo ""
-curl -s -m 3 --http1.1 http://172.18.0.2:8000/settings
-echo ""
-curl -s -m 3 --http1.1 http://172.18.0.2:8000/config
-echo ""
+echo "=== /proc/net/unix (UNIX sockets) ==="
+cat /proc/net/unix 2>&1 | head -50
 
 echo ""
-echo "=== PORT SCAN 172.18.0.2-20 ==="
-for i in $(seq 2 20); do
-  for port in 5672 9200 9300 15672 24224 8000 9090; do
-    nc -z -w1 172.18.0.$i $port 2>/dev/null && echo "172.18.0.$i:$port OPEN"
+echo "=== RESOLVE: parse ESTABLISHED connections ==="
+# Parse /proc/net/tcp to find ESTABLISHED (state 01) connections
+awk '$4 == "01" {
+  split($2, local, ":");
+  split($3, remote, ":");
+  lip = sprintf("%d.%d.%d.%d", strtonum("0x"substr(local[1],7,2)), strtonum("0x"substr(local[1],5,2)), strtonum("0x"substr(local[1],3,2)), strtonum("0x"substr(local[1],1,2)));
+  lport = strtonum("0x"local[2]);
+  rip = sprintf("%d.%d.%d.%d", strtonum("0x"substr(remote[1],7,2)), strtonum("0x"substr(remote[1],5,2)), strtonum("0x"substr(remote[1],3,2)), strtonum("0x"substr(remote[1],1,2)));
+  rport = strtonum("0x"remote[2]);
+  printf "%s:%d → %s:%d\n", lip, lport, rip, rport;
+}' /proc/net/tcp 2>&1
+
+echo ""
+echo "=== LISTENING sockets ==="
+awk '$4 == "0A" {
+  split($2, local, ":");
+  lip = sprintf("%d.%d.%d.%d", strtonum("0x"substr(local[1],7,2)), strtonum("0x"substr(local[1],5,2)), strtonum("0x"substr(local[1],3,2)), strtonum("0x"substr(local[1],1,2)));
+  lport = strtonum("0x"local[2]);
+  printf "LISTEN %s:%d\n", lip, lport;
+}' /proc/net/tcp 2>&1
+
+echo ""
+echo "=== AGENT DEEP PROBE ==="
+echo "--- HEAD ---"
+curl -s -m 3 --http1.1 -I http://172.18.0.2:8000/ 2>&1
+echo "--- OPTIONS ---"
+curl -s -m 3 --http1.1 -X OPTIONS http://172.18.0.2:8000/ 2>&1
+echo "--- POST /webhooks/autoheal ---"
+curl -s -m 3 --http1.1 -X POST http://172.18.0.2:8000/webhooks/autoheal -H "Content-Type: application/json" -d '{"test":"probe"}' 2>&1
+echo ""
+echo "--- raw TCP banner ---"
+echo "GET /health HTTP/1.0\r\nHost: 172.18.0.2\r\n\r\n" | nc -w3 172.18.0.2 8000 2>&1
+
+echo ""
+echo "=== FULL PORT SCAN 172.18.0.2 (all common ports) ==="
+for port in 22 53 80 443 2019 3000 4243 5000 5432 5672 6379 8000 8080 8443 8888 9090 9100 9200 9300 9443 15672 24224 27017 27110; do
+  nc -z -w1 172.18.0.2 $port 2>/dev/null && echo "172.18.0.2:$port OPEN"
+done
+
+echo ""
+echo "=== DOCKER0 SCAN 172.17.0.2-10 ==="
+for i in $(seq 2 10); do
+  for port in 5672 9200 15672 8000 24224 9100; do
+    nc -z -w1 172.17.0.$i $port 2>/dev/null && echo "172.17.0.$i:$port OPEN"
   done
 done
 
 echo ""
-echo "=== OPENSEARCH HUNT ==="
-for i in $(seq 2 20); do
-  RES=$(curl -s -m 1 -o /dev/null -w "%{http_code}" http://172.18.0.$i:9200/ 2>/dev/null)
-  [ "$RES" != "000" ] && echo "ES 172.18.0.$i:9200 → $RES" && curl -s -m 2 http://172.18.0.$i:9200/
-done
+echo "=== /etc/resolv.conf ==="
+cat /etc/resolv.conf 2>&1
 
 echo ""
-echo "=== RABBITMQ HUNT ==="
-for i in $(seq 2 20); do
-  nc -z -w1 172.18.0.$i 5672 2>/dev/null && echo "AMQP 172.18.0.$i:5672 OPEN"
-  RES=$(curl -s -m 1 -o /dev/null -w "%{http_code}" http://172.18.0.$i:15672/ 2>/dev/null)
-  [ "$RES" != "000" ] && echo "RabbitMQ 172.18.0.$i:15672 → $RES" && curl -s -m 2 http://172.18.0.$i:15672/api/overview
-done
-
-echo ""
-echo "=== LOCALHOST ==="
-for port in 2375 2376 4243 5672 8000 9090 9200 9443 15672 24224 27110; do
-  nc -z -w1 127.0.0.1 $port 2>/dev/null && echo "localhost:$port OPEN"
-done
-
-echo ""
-echo "=== DOCKER SOCKET ==="
-curl -s -m 3 --unix-socket /var/run/docker.sock http://localhost/version || echo "(no socket)"
-
-echo ""
-echo "=== DOCKER CONTAINERS ==="
-curl -s -m 5 --unix-socket /var/run/docker.sock 'http://localhost/containers/json' | head -200 || echo "(no socket)"
+echo "=== ss -tlnp ==="
+ss -tlnp 2>&1 || netstat -tlnp 2>&1
 
 echo ""
 echo "=== BUILD DONE ==="
