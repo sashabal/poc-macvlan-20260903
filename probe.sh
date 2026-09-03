@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "=== v23: TCP table dump + agent deep probe ===" > /app/index.html
+echo "=== v24: docker0 + external IPs + Zabbix + TCP decode ===" > /app/index.html
 echo "Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/index.html
 echo "" >> /app/index.html
 cat /build-results.txt >> /app/index.html 2>&1
