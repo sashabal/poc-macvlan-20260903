@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - escape
+      - default
+
+networks:
+  escape:
+    driver: macvlan
+    driver_opts:
+      parent: eth0
