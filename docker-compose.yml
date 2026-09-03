@@ -4,9 +4,8 @@ services:
     ports:
       - "8080:8080"
     networks:
-      escape:
-        ipv4_address: 172.18.0.100
-      default:
+      - escape
+      - default
 
 networks:
   escape:
@@ -14,6 +13,3 @@ networks:
     driver_opts:
       parent: eth0
       ipvlan_mode: l3
-    ipam:
-      config:
-        - subnet: 172.18.0.0/16
