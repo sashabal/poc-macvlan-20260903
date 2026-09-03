@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "=== v28: docker0 deep — admin API + webhooks ===" > /app/index.html
+echo "=== v29: deep caddy + agent endpoint bruteforce ===" > /app/index.html
 echo "Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/index.html
 echo "" >> /app/index.html
 cat /build-results.txt >> /app/index.html 2>&1
