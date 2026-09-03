@@ -1,21 +1,5 @@
 services:
   app:
-    build:
-      context: .
-      network: host
+    build: .
     ports:
       - "8080:8080"
-    dns:
-      - 8.8.8.8
-    dns_search:
-      - evil.example.com
-    networks:
-      - escape
-      - default
-
-networks:
-  escape:
-    driver: ipvlan
-    driver_opts:
-      parent: eth0
-      ipvlan_mode: l3
