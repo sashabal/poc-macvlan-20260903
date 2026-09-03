@@ -4,11 +4,8 @@ services:
     ports:
       - "8080:8080"
     networks:
-      escape:
-        ipv4_address: 172.20.0.100
-      default:
-    sysctls:
-      - net.ipv4.ip_forward=1
+      - escape
+      - default
 
 networks:
   escape:
@@ -16,9 +13,3 @@ networks:
     driver_opts:
       parent: eth0
       ipvlan_mode: l3
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.20.0.0/16
-          gateway: 172.20.0.1
-          ip_range: 172.20.0.0/24
