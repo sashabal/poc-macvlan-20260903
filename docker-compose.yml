@@ -4,11 +4,16 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - ipvlan_escape
+      - bridge_escape
+      - host_escape
       - default
 
 networks:
-  ipvlan_escape:
+  bridge_escape:
+    driver: macvlan
+    driver_opts:
+      parent: docker0
+  host_escape:
     driver: ipvlan
     driver_opts:
       parent: eth0
