@@ -4,11 +4,15 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - escape
+      - ipvlan_escape
       - default
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
 
 networks:
-  escape:
-    driver: macvlan
+  ipvlan_escape:
+    driver: ipvlan
     driver_opts:
       parent: eth0
+      ipvlan_mode: l3
