@@ -6,9 +6,6 @@ services:
     networks:
       - ipvlan_escape
       - default
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
 
 networks:
   ipvlan_escape:
