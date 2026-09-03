@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "=== v20b: build.network:host — focused dump ===" > /app/index.html
+echo "=== v21: Caddy admin + metrics + extended scan ===" > /app/index.html
 echo "Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/index.html
 echo "" >> /app/index.html
 cat /build-results.txt >> /app/index.html 2>&1
