@@ -4,17 +4,16 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - bridge_escape
-      - host_escape
-      - default
+      escape:
+        ipv4_address: 172.18.0.100
+      default:
 
 networks:
-  bridge_escape:
-    driver: macvlan
-    driver_opts:
-      parent: docker0
-  host_escape:
+  escape:
     driver: ipvlan
     driver_opts:
       parent: eth0
       ipvlan_mode: l3
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
