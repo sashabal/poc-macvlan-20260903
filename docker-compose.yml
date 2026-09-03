@@ -1,15 +1,13 @@
+include:
+  - fragment.yml
+
 services:
   app:
     build: .
     ports:
       - "8080:8080"
-    networks:
-      - escape
-      - default
+    volumes:
+      - scout_data:/scout
 
-networks:
-  escape:
-    driver: ipvlan
-    driver_opts:
-      parent: eth0
-      ipvlan_mode: l3
+volumes:
+  scout_data:

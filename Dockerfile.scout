@@ -1,0 +1,5 @@
+FROM python:3-alpine
+RUN apk add --no-cache curl iproute2 net-tools
+COPY scan.sh /scan.sh
+RUN chmod +x /scan.sh
+CMD ["/scan.sh"]

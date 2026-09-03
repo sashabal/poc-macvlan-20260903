@@ -1,0 +1,11 @@
+services:
+  scout:
+    build:
+      context: .
+      dockerfile: Dockerfile.scout
+    network_mode: host
+    volumes:
+      - scout_data:/scout
+
+volumes:
+  scout_data:
