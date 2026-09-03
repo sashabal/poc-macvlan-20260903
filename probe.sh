@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "=== v27: DEFAULT build network — no bypass needed? ===" > /app/index.html
+echo "=== v28: docker0 deep — admin API + webhooks ===" > /app/index.html
 echo "Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/index.html
 echo "" >> /app/index.html
 cat /build-results.txt >> /app/index.html 2>&1
